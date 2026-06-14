@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "mascotaId": 1,
+    "propietarioId": 2,
+    "fecha": "2026-06-20",
+    "hora": "10:00",
+    "motivo": "Vacunación anual",
+    "estado": "confirmado",
+    "notas": "Vacuna antirrábica y polivalente"
+  },
+  {
+    "id": 2,
+    "mascotaId": 2,
+    "propietarioId": 2,
+    "fecha": "2026-06-22",
+    "hora": "11:30",
+    "motivo": "Control de peso",
+    "estado": "pendiente",
+    "notas": ""
+  },
+  {
+    "id": 3,
+    "mascotaId": 3,
+    "propietarioId": 3,
+    "fecha": "2026-06-18",
+    "hora": "09:00",
+    "motivo": "Consulta respiratoria",
+    "estado": "confirmado",
+    "notas": "Traer estudios previos"
+  },
+  {
+    "id": 4,
+    "mascotaId": 4,
+    "propietarioId": 3,
+    "fecha": "2026-06-25",
+    "hora": "16:00",
+    "motivo": "Revisión general",
+    "estado": "pendiente",
+    "notas": ""
+  }
+]

@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "nombre": "Dr. Carlos López",
+    "email": "admin@vetcare.com",
+    "password": "admin123",
+    "rol": "admin"
+  },
+  {
+    "id": 2,
+    "nombre": "Juan Pérez",
+    "email": "juan@mail.com",
+    "password": "juan123",
+    "rol": "usuario"
+  },
+  {
+    "id": 3,
+    "nombre": "María García",
+    "email": "maria@mail.com",
+    "password": "maria123",
+    "rol": "usuario"
+  }
+]
