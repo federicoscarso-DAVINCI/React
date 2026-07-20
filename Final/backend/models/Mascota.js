@@ -47,6 +47,10 @@ const mascotaSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    imagen: {
+      type: String,
+      default: '',
+    },
     creadoPor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Usuario',

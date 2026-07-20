@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import api from '../api/axios';
+import api, { SERVER_URL } from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
 const ESPECIES = ['Perro', 'Gato', 'Ave', 'Reptil', 'Roedor', 'Otro'];
@@ -14,19 +15,35 @@ const FORM_INICIAL = {
   duenoEmail: '',
   duenoTelefono: '',
   observaciones: '',
+  propietario: '',
 };
 
 export default function MascotaFormPage() {
   const { id } = useParams();
   const esEdicion = Boolean(id);
   const navigate = useNavigate();
+  const { usuario } = useAuth();
   const { mostrarToast } = useToast();
+  const esAdmin = usuario?.rol === 'admin';
 
   const [form, setForm] = useState(FORM_INICIAL);
   const [errores, setErrores] = useState({});
   const [cargando, setCargando] = useState(esEdicion);
   const [guardando, setGuardando] = useState(false);
   const [errorGeneral, setErrorGeneral] = useState('');
+  const [usuarios, setUsuarios] = useState([]);
+  const [imagenActual, setImagenActual] = useState('');
+  const [archivoImagen, setArchivoImagen] = useState(null);
+  const [previewImagen, setPreviewImagen] = useState('');
+
+  useEffect(() => {
+    if (esAdmin) {
+      api
+        .get('/usuarios')
+        .then(({ data }) => setUsuarios(data))
+        .catch(() => {});
+    }
+  }, [esAdmin]);
 
   useEffect(() => {
     if (!esEdicion) return;
@@ -42,11 +59,20 @@ export default function MascotaFormPage() {
           duenoEmail: data.duenoEmail,
           duenoTelefono: data.duenoTelefono || '',
           observaciones: data.observaciones || '',
+          propietario: data.creadoPor?._id || '',
         });
+        setImagenActual(data.imagen || '');
       })
       .catch(() => setErrorGeneral('No se pudo cargar la mascota.'))
       .finally(() => setCargando(false));
   }, [id, esEdicion]);
+
+  function handleImagenChange(e) {
+    const archivo = e.target.files?.[0];
+    if (!archivo) return;
+    setArchivoImagen(archivo);
+    setPreviewImagen(URL.createObjectURL(archivo));
+  }
 
   function validar() {
     const nuevosErrores = {};
@@ -74,14 +100,28 @@ export default function MascotaFormPage() {
     if (!validar()) return;
 
     setGuardando(true);
-    const payload = { ...form, edad: Number(form.edad) };
+    const formData = new FormData();
+    formData.append('nombre', form.nombre);
+    formData.append('especie', form.especie);
+    formData.append('raza', form.raza);
+    formData.append('edad', form.edad);
+    formData.append('duenoNombre', form.duenoNombre);
+    formData.append('duenoEmail', form.duenoEmail);
+    formData.append('duenoTelefono', form.duenoTelefono);
+    formData.append('observaciones', form.observaciones);
+    if (esAdmin && form.propietario) {
+      formData.append('propietario', form.propietario);
+    }
+    if (archivoImagen) {
+      formData.append('imagen', archivoImagen);
+    }
 
     try {
       if (esEdicion) {
-        await api.put(`/mascotas/${id}`, payload);
+        await api.put(`/mascotas/${id}`, formData);
         mostrarToast('Mascota actualizada correctamente', 'exito');
       } else {
-        await api.post('/mascotas', payload);
+        await api.post('/mascotas', formData);
         mostrarToast('Mascota creada correctamente', 'exito');
       }
       navigate('/mascotas');
@@ -94,11 +134,19 @@ export default function MascotaFormPage() {
 
   if (cargando) return <div className="page">Cargando...</div>;
 
+  const fotoAMostrar = previewImagen || (imagenActual ? `${SERVER_URL}${imagenActual}` : '');
+
   return (
     <div className="page page-centered">
       <form className="card form" onSubmit={handleSubmit}>
         <h2>{esEdicion ? 'Editar mascota' : 'Nueva mascota'}</h2>
         {errorGeneral && <p className="form-error-general">{errorGeneral}</p>}
+
+        <label>
+          Foto de la mascota
+          {fotoAMostrar && <img className="form-img-preview" src={fotoAMostrar} alt="Vista previa" />}
+          <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleImagenChange} />
+        </label>
 
         <label>
           Nombre
@@ -167,6 +215,23 @@ export default function MascotaFormPage() {
             rows={3}
           />
         </label>
+
+        {esAdmin && (
+          <label>
+            Usuario asociado
+            <select
+              value={form.propietario}
+              onChange={(e) => setForm({ ...form, propietario: e.target.value })}
+            >
+              <option value="">— Sin asignar (quedará a tu nombre) —</option>
+              {usuarios.map((u) => (
+                <option key={u._id} value={u._id}>
+                  {u.nombre} ({u.email}) {u.rol === 'admin' ? '· admin' : ''}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
         <div className="form-actions">
           <button className="btn btn-secondary" type="button" onClick={() => navigate('/mascotas')}>

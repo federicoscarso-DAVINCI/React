@@ -38,7 +38,8 @@ export default function TurnoFormPage() {
   useEffect(() => {
     async function cargarDatos() {
       try {
-        const { data: listaMascotas } = await api.get('/mascotas');
+        const { data } = await api.get('/mascotas', { params: { limit: 200 } });
+        const listaMascotas = data.items;
         setMascotas(listaMascotas);
 
         if (esEdicion) {

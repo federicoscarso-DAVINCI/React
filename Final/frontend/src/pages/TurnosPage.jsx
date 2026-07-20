@@ -2,13 +2,17 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import ConfirmDialog from '../components/ConfirmDialog';
+import Pagination from '../components/Pagination';
 import { useToast } from '../context/ToastContext';
 
 const ESTADOS = ['Pendiente', 'Confirmado', 'Completado', 'Cancelado'];
+const LIMITE = 8;
 
 export default function TurnosPage() {
   const { mostrarToast } = useToast();
   const [turnos, setTurnos] = useState([]);
+  const [pagina, setPagina] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [estado, setEstado] = useState('');
@@ -18,10 +22,11 @@ export default function TurnosPage() {
     setCargando(true);
     setError('');
     try {
-      const params = {};
+      const params = { page: pagina, limit: LIMITE };
       if (estado) params.estado = estado;
       const { data } = await api.get('/turnos', { params });
-      setTurnos(data);
+      setTurnos(data.items);
+      setTotalPages(data.totalPages);
     } catch {
       setError('No se pudieron cargar los turnos.');
     } finally {
@@ -32,6 +37,10 @@ export default function TurnosPage() {
   useEffect(() => {
     cargarTurnos();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [estado, pagina]);
+
+  useEffect(() => {
+    setPagina(1);
   }, [estado]);
 
   async function confirmarEliminar() {
@@ -88,6 +97,8 @@ export default function TurnosPage() {
           </div>
         ))}
       </div>
+
+      <Pagination page={pagina} totalPages={totalPages} onChange={setPagina} />
 
       <ConfirmDialog
         abierto={Boolean(aEliminar)}

@@ -4,8 +4,8 @@ const { protegerRuta } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.get('/', listar);
-router.get('/:id', obtenerPorId);
+router.get('/', protegerRuta, listar);
+router.get('/:id', protegerRuta, obtenerPorId);
 router.post('/', protegerRuta, crear);
 router.put('/:id', protegerRuta, actualizar);
 router.delete('/:id', protegerRuta, eliminar);
